@@ -23,25 +23,41 @@ class Engine:
                 self.source_folder = self.jsprms.prms['path']['source']
                 self.destination_folder = self.jsprms.prms['path']['dest']                          
 
+        
+        @_error_decorator(False)
+        def convert_to_db2(self, sql):
+            # Remplacements simples
+            for old, new in conversion_rules.items():
+                sql = sql.replace(old, new)            
+            # Exemple : convertir LIMIT n en FETCH FIRST n ROWS ONLY
+            sql = re.sub(r"LIMIT\s+(\d+)", r"FETCH FIRST \1 ROWS ONLY", sql)
+            
+            return sql
+
+    
+
+
 
         @_error_decorator(False)
         def get_sql_from_xlsx(self, xlsx_file):
             # Charger le fichier Excel
             xls = pd.ExcelFile(xlsx_file)
-
-            # Liste pour stocker les requêtes SQL
+            # tab 4 sql queries
             sql_queries = []
-            # Parcourir toutes les feuilles
+            # Fetch all sheets
             for sheet_name in xls.sheet_names:
                 df = pd.read_excel(xls, sheet_name=sheet_name)
                 for col in df.columns:
                     for cell in df[col].dropna():
                         if isinstance(cell, str) and re.search(r"\\b(SELECT|INSERT|UPDATE|DELETE)\\b", cell, re.IGNORECASE):
                             sql_queries.append(cell.strip())
-
-            # Afficher les requêtes trouvées
-            for query in sql_queries:
-                print(query)
+            # convert odbc query to db2 sql
+            ## converted_queries = [self.convert_to_db2(q) for q in sql_queries]
+            # sql queries to textfile
+            filename = f"{self.root_app}{os.path.sep}data{os.path.sep}res{os.path.sep}{xlsx_file.replace(" ", "")}.sql"
+            for i, query in enumerate(sql_queries):
+                file_utils.str_to_textfile (f"{filename}-{i}", query)
+                
 
         ##############################################
         @_error_decorator()
@@ -63,7 +79,7 @@ class Engine:
             # Walk through all subdirectories and files
             print (self.source_folder)
             for root, dirs, files in os.walk(self.source_folder):
-                print(files)
+                # print(files)
                 for file in files:
                     if file.lower().endswith(excel_extensions):
                         source_path = os.path.join(root, file)
@@ -76,6 +92,7 @@ class Engine:
                                 new_name = f"{base}_{counter}{ext}"
                                 destination_path = os.path.join(self.destination_folder, new_name)
                                 counter += 1
-                        shutil.copy2(source_path, destination_path)
-                        print(f"✅ Copied: {file}")
+                        if not os.path.exists(destination_path):
+                            shutil.copy2(source_path, destination_path)
+                            print(f"✅ Copied: {file}")
             print("✅ All .xlsx files have been copied.")

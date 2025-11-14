@@ -4,8 +4,10 @@ __pycache__/
 tampermonkey
 settings.json
 data/conf/default.json
+data/res
+data/test
+data/xlsx
 kept
-data/results
 install
 utils
 data/test.json
