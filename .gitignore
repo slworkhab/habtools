@@ -1,0 +1,14 @@
+chromeprofile
+log
+__pycache__/
+tampermonkey
+settings.json
+data/conf/default.json
+kept
+data/results
+install
+utils
+data/test.json
+notes
+data/database
+env
