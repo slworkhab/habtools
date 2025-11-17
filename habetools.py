@@ -46,8 +46,6 @@ class Bot:
             raise
    
 
-
-
     def main(self, command="", jsonfile="", param1="", param2=""):       
         self.init_main()
         t1 = datetime.now()
@@ -66,10 +64,7 @@ class Bot:
                 self.log.lg("=Here I am=")   
                 if (command == "copyxl"):         
                         engine.copy_xlsx()
-                        wk = input("waiting : ")
-                if (command == "browse_xlsx_for_sql"):         
-                        engine.browse_xlsx_for_sql()
-                        wk = input("Done : ")                                                      
+                        wk = input("waiting : ")                                                    
         except Exception as e:  
                 print("GLOBAL MAIN EXCEPTION")
                 self.log.errlg(e)

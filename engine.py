@@ -26,34 +26,7 @@ class Engine:
                 self.source_folder = self.jsprms.prms['path']['source']
                 self.destination_folder = self.jsprms.prms['path']['dest']                          
 
-        
-        @_error_decorator(False)
-        def convert_to_db2(self, sql):
-            # Remplacements simples
-            for old, new in conversion_rules.items():
-                sql = sql.replace(old, new)            
-            # Exemple : convertir LIMIT n en FETCH FIRST n ROWS ONLY
-            sql = re.sub(r"LIMIT\s+(\d+)", r"FETCH FIRST \1 ROWS ONLY", sql)
-            
-            return sql
-
   
-        ##############################################
-        @_error_decorator()
-        def browse_xlsx_for_sql(self):
-            # Walk through all subdirectories and files
-            for root, dirs, files in os.walk(self.destination_folder):
-                for file in files:
-                    print(f"Processing: {file}")
-                    xl_file = os.path.join(root, file)
-                    # self.get_sql_from_xlsx(xl_file)
-                    xlsx_extractor = XlsxExtrator(self.root_app, self.trace, self.log, self.jsprms)                      
-                    xlsx_extractor.main(xl_file)
-                   
-                    
-
-
-
         @_error_decorator()
         def copy_xlsx(self):                
             # Create the destination folder if it doesn't exist
