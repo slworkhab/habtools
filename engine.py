@@ -23,8 +23,8 @@ class Engine:
                 self.log = log
                 self.jsprms = jsprms                
                 self.root_app = os.getcwd()         
-                self.source_folder = self.jsprms.prms['path']['source']
-                self.destination_folder = self.jsprms.prms['path']['dest']                          
+                self.source_folder = self.jsprms.prms['path']['source_linux']
+                self.destination_folder = self.jsprms.prms['path']['dest_linux']                          
 
   
         @_error_decorator()

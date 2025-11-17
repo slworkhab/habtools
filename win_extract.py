@@ -40,9 +40,8 @@ class XlsxExtrator:
             self.jsprms = jsonprms.Prms(jsonFn)
             self.time_out = self.jsprms.prms['time_out']         
             self.log.lg("=HERE WE GO=")
-            self.remove_logs()
-            self.source_folder = self.jsprms.prms['path']['source']
-            self.destination_folder = self.jsprms.prms['path']['dest']
+            self.remove_logs()            
+            self.destination_folder = self.jsprms.prms['path']['dest_win']
 
         except Exception as e:
             self.log.errlg(f"Wasted ! : {e}")
