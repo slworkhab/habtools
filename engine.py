@@ -6,6 +6,9 @@ from datetime import datetime
 import shutil
 import re
 import pandas as pd
+import zipfile
+import xml.etree.ElementTree as ET
+from xlsx_extractor import XlsxExtrator
 #mes libs
 import utils.str_utils as str_utils
 import utils.file_utils as file_utils
@@ -34,31 +37,7 @@ class Engine:
             
             return sql
 
-    
-
-
-
-        @_error_decorator(False)
-        def get_sql_from_xlsx(self, xlsx_file):
-            # Charger le fichier Excel
-            xls = pd.ExcelFile(xlsx_file)
-            # tab 4 sql queries
-            sql_queries = []
-            # Fetch all sheets
-            for sheet_name in xls.sheet_names:
-                df = pd.read_excel(xls, sheet_name=sheet_name)
-                for col in df.columns:
-                    for cell in df[col].dropna():
-                        if isinstance(cell, str) and re.search(r"\\b(SELECT|INSERT|UPDATE|DELETE)\\b", cell, re.IGNORECASE):
-                            sql_queries.append(cell.strip())
-            # convert odbc query to db2 sql
-            ## converted_queries = [self.convert_to_db2(q) for q in sql_queries]
-            # sql queries to textfile
-            filename = f"{self.root_app}{os.path.sep}data{os.path.sep}res{os.path.sep}{xlsx_file.replace(" ", "")}.sql"
-            for i, query in enumerate(sql_queries):
-                file_utils.str_to_textfile (f"{filename}-{i}", query)
-                
-
+  
         ##############################################
         @_error_decorator()
         def browse_xlsx_for_sql(self):
@@ -67,7 +46,11 @@ class Engine:
                 for file in files:
                     print(f"Processing: {file}")
                     xl_file = os.path.join(root, file)
-                    self.get_sql_from_xlsx(xl_file)
+                    # self.get_sql_from_xlsx(xl_file)
+                    xlsx_extractor = XlsxExtrator(self.root_app, self.trace, self.log, self.jsprms)                      
+                    xlsx_extractor.main(xl_file)
+                   
+                    
 
 
 
