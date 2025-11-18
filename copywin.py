@@ -5,7 +5,7 @@ from datetime import datetime
 import utils.mylog as mylog
 import utils.jsonprms as jsonprms
 import utils.file_utils as file_utils
-
+import sys
 import re
 from utils.mydecorators import _error_decorator
 from string import Template
@@ -46,25 +46,14 @@ class Bot:
             raise
    
 
-    def main(self, command="", jsonfile="", param1="", param2=""):       
+    def main(self):       
         self.init_main()
         t1 = datetime.now()
         try:
-                self.trace(inspect.stack())               
-                if command == "":
-                        nb_args = len(sys.argv)
-                        command = "test" if (nb_args == 1) else sys.argv[1]
-                        # fichier json en param
-                        jsonfile = "default" if (nb_args < 3) else sys.argv[2].lower()                                
-                        param1 = "default" if (nb_args < 4) else sys.argv[3].lower()
-                        param2 = "default" if (nb_args < 5) else sys.argv[4].lower()
-                        #param3 = "default" if (nb_args < 6) else sys.argv[5].lower()      
-                        print("params=", command, jsonfile, param1, param2)                                                                                    
+                self.trace(inspect.stack())                                                                                                             
                 engine = Engine(self.root_app, self.trace, self.log, self.jsprms)                                                                        
                 self.log.lg("=Here I am=")   
-                if (command == "copyxl"):         
-                        engine.copy_xlsx()
-                        wk = input("waiting : ")                                                    
+                engine.copy_xlsx()              
         except Exception as e:  
                 print("GLOBAL MAIN EXCEPTION")
                 self.log.errlg(e)
@@ -72,4 +61,7 @@ class Bot:
             t2 = datetime.now()
             dt = t2 - t1
             self.log.lg("Done (elapse : %s)" % dt)                
-            print("This is the end")            
+            print("This is the end")
+
+bot = Bot()
+bot.main()

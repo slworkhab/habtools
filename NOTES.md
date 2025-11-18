@@ -1,10 +1,14 @@
 # NOTES
 
-## mount z driver
+## Eveything is on windows now
+
+### copy
+python copywin.py
+
+### extract
+python extractwin.py
+
+## mount z driver under linux (DGAF)
 
  sudo mount -t drvfs H: /mnt/h1
 
-
- ##
-
- /mnt/c/linux/DEV/PythonHab/habetools/src

@@ -23,8 +23,8 @@ class Engine:
                 self.log = log
                 self.jsprms = jsprms                
                 self.root_app = os.getcwd()         
-                self.source_folder = self.jsprms.prms['path']['source_linux']
-                self.destination_folder = self.jsprms.prms['path']['dest_linux']                          
+                self.source_folder = self.jsprms.prms['path']['source']
+                self.destination_folder = self.jsprms.prms['path']['dest']                          
 
 
         def read_str_file_first_line(self, file_path):        
@@ -43,7 +43,7 @@ class Engine:
             excel_extensions = (".xls", ".xlsx")
             # Walk through all subdirectories and files
             print (self.source_folder)
-            flag_file_path = f"{self.jsprms.prms['path']['flag_copy_linux']}"
+            flag_file_path = f"{self.jsprms.prms['path']['flag_copy']}"
             if not os.path.exists(flag_file_path):
                 self.str_to_textfile(flag_file_path, "nope")
             found_file = False

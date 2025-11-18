@@ -42,7 +42,7 @@ class XlsxExtrator:
             self.time_out = self.jsprms.prms['time_out']         
             self.log.lg("=HERE WE GO=")
             self.remove_logs()            
-            self.destination_folder = self.jsprms.prms['path']['dest_win']
+            self.destination_folder = self.jsprms.prms['path']['dest']
 
         except Exception as e:
             self.log.errlg(f"Wasted ! : {e}")
@@ -151,7 +151,7 @@ class XlsxExtrator:
         excel.Visible = True
         excel.DisplayAlerts = False  # Pas de pop-up
         excel.Visible = True  # Ne pas afficher Excel
-        flag_file_path = f"{self.jsprms.prms['path']['flag_sql_win']}"
+        flag_file_path = f"{self.jsprms.prms['path']['flag_sql']}"
         if not os.path.exists(flag_file_path):
             file_utils.str_to_textfile(flag_file_path, "nope")
         found_file = False

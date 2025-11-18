@@ -17,3 +17,4 @@ env
 data/flag_sql
 data/flag_linux
 win_extract.py
+data/flag_copy
