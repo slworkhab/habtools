@@ -26,7 +26,11 @@ class Engine:
                 self.source_folder = self.jsprms.prms['path']['source_linux']
                 self.destination_folder = self.jsprms.prms['path']['dest_linux']                          
 
-  
+
+        def read_str_file_first_line(self, file_path):        
+            with open(file_path , "r", encoding="cp1252") as file:
+                return file.readline()
+
         @_error_decorator()
         def copy_xlsx(self):                
             # Create the destination folder if it doesn't exist
@@ -34,21 +38,30 @@ class Engine:
             excel_extensions = (".xls", ".xlsx")
             # Walk through all subdirectories and files
             print (self.source_folder)
+            flag_file_path = f"{self.jsprms.prms['path']['flag_copy_linux']}"
+            if not os.path.exists(flag_file_path):
+                file_utils.str_to_textfile(flag_file_path, "nope")
+            found_file = False
             for root, dirs, files in os.walk(self.source_folder):
-                # print(files)
-                for file in files:
-                    if file.lower().endswith(excel_extensions):
-                        source_path = os.path.join(root, file)
-                        destination_path = os.path.join(self.destination_folder, file)
-                        # If a file with the same name already exists, rename it
-                        if os.path.exists(destination_path):
-                            base, ext = os.path.splitext(file)
-                            counter = 1
-                            while os.path.exists(destination_path):
-                                new_name = f"{base}_{counter}{ext}"
-                                destination_path = os.path.join(self.destination_folder, new_name)
-                                counter += 1
-                        if not os.path.exists(destination_path):
-                            shutil.copy2(source_path, destination_path)
-                            print(f"✅ Copied: {file}")
+                for file in files:                    
+                    if file.lower().endswith(excel_extensions):                   
+                        if self.read_str_file_first_line(flag_file_path) == file :
+                            found_file = True
+                        if not found_file :                             
+                            source_path = os.path.join(root, file)
+                            destination_path = os.path.join(self.destination_folder, file)
+                            # If a file with the same name already exists, rename it
+                            if os.path.exists(destination_path):
+                                base, ext = os.path.splitext(file)
+                                counter = 1
+                                while os.path.exists(destination_path):
+                                    new_name = f"{base}_{counter}{ext}"
+                                    destination_path = os.path.join(self.destination_folder, new_name)
+                                    counter += 1
+                            if not os.path.exists(destination_path):
+                                shutil.copy2(source_path, destination_path)
+                                file_utils.str_to_textfile(flag_file_path, file)
+                                print(f"✅ Copied: {file}")
+                        else:
+                            print(f"Found file : {file}")
             print("✅ All .xlsx files have been copied.")

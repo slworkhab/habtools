@@ -96,37 +96,42 @@ class XlsxExtrator:
         try: 
             # Lancer Excel via COM
    
-
-            # Ouvrir le fichier Excel
-            wb = excel.Workbooks.Open(excel_file, UpdateLinks=0, ReadOnly=True, IgnoreReadOnlyRecommended=True)
-            # Vérifier si des requêtes existent
-            if hasattr(wb, "Queries"):            
-                fname = f"{self.jsprms.prms['path']['result']}{os.path.sep}{file_utils.get_filename_without_extension(os.path.basename(excel_file).replace(' ',''))}.sql"                     
-                
-                for query in wb.Queries:             
-                    # query.RefreshOnOpen = False       
-                    if "select " in query.Formula.lower():
-                        with open(fname, "a", encoding="utf-8") as f:
-                            f.write(f"Nom de la requête : {query.Name}\n")                        
-                            # f.write(self.convert_powerquery_to_db2_sql(query.Formula))  # Code M complet
-                            # f.write(query.Formula)  # Code M complet
-                            db2_query = self.extract_sql_from_powerquery(query.Formula) 
-                            db2_query = self.convert_sql_to_db2(db2_query)
-                            f.write(db2_query)
-                            
-                            f.write("\n" + "-"*80 + "\n")                       
-                        print(f"Extraction terminée. Les requêtes ont été sauvegardées dans {fname}.")
-                    else:
-                        print("Pas de SELECT dans les queries.")
+            try: 
+                # Ouvrir le fichier Excel
+                wb = excel.Workbooks.Open(excel_file, UpdateLinks=0, ReadOnly=True, IgnoreReadOnlyRecommended=True)
+                # Vérifier si des requêtes existent
+                if hasattr(wb, "Queries"):            
+                    fname = f"{self.jsprms.prms['path']['result']}{os.path.sep}{file_utils.get_filename_without_extension(os.path.basename(excel_file).replace(' ',''))}.sql"                     
+                    
+                    for query in wb.Queries:
+                                
+                        # query.RefreshOnOpen = False       
+                        if "select " in query.Formula.lower():
+                            with open(fname, "a", encoding="utf-8") as f:
+                                f.write(f"Nom de la requête : {query.Name}\n")                        
+                                # f.write(self.convert_powerquery_to_db2_sql(query.Formula))  # Code M complet
+                                # f.write(query.Formula)  # Code M complet
+                                db2_query = self.extract_sql_from_powerquery(query.Formula) 
+                                db2_query = self.convert_sql_to_db2(db2_query)
+                                f.write(db2_query)
+                                
+                                f.write("\n" + "-"*80 + "\n")                       
+                            print(f"Extraction terminée. Les requêtes ont été sauvegardées dans {fname}.")
+                        else:
+                            print("Pas de SELECT dans les queries.")
+                       # Fermer le classeur si ouvert
+                self.close_tab(wb)
+            except Exception as e:
+                # Gérer l'erreur sans afficher de popup
+                print("Erreur ouverture :", e)  
             else:
                 print("Aucune requête Power Query trouvée dans ce fichier.")
             # timer.cancel()
         except Exception as e:
             # Gérer l'erreur sans afficher de popup
             print("Une erreur est survenue :", e)                    
-        finally:
-            # Fermer le classeur si ouvert
-            self.close_tab(wb)
+     
+     
            
     def close_tab(self, wb):
         if wb:
@@ -155,13 +160,13 @@ class XlsxExtrator:
                 print(f"Processing: {file}")
                 if self.read_str_file_first_line(flag_file_path) == file :
                     found_file = True
-                if found_file :  
+                if not found_file :  
                     print(f"Found file : {file}")                  
                     xl_file = os.path.join(root, file)   
                     xlsx_extractor.extract_powerquery_queries(excel, xl_file)
                     file_utils.str_to_textfile(flag_file_path, file)
                 else:
-                    print(f"NOT Found file : {file}")                  
+                    print(f"Found file : {file}")                  
           # Quitter Excel si lancé
         if excel:
             excel.Quit()

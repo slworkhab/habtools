@@ -15,4 +15,5 @@ notes
 data/database
 env
 data/flag_sql
-data/flag_copy
+data/flag_linux
+win_extract.py

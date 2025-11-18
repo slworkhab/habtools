@@ -52,7 +52,6 @@ matrix_print(drkcol("What I can do for you :\n"))
 menulist = []
 menulist.append(Menuitem("test", "test", 0, False))
 menulist.append(Menuitem("copyxl","copy xls (see conf file)", 0, False))
-menulist.append(Menuitem("browse_xlsx_for_sql","extract sql from files", 0, False))
 for idx, menuitem in enumerate(menulist):
     print (mencol(idx, menuitem.command, menuitem.label))
     if menuitem.ret:
