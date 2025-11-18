@@ -14,3 +14,5 @@ data/test.json
 notes
 data/database
 env
+data/flag_sql
+data/flag_copy

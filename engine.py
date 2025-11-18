@@ -4,7 +4,7 @@ from os import path
 import inspect
 from datetime import datetime
 import shutil
-import re
+
 import pandas as pd
 import zipfile
 import xml.etree.ElementTree as ET

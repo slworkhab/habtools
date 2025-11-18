@@ -4,6 +4,7 @@ import os
 from os import path
 import inspect
 from datetime import datetime
+import re
 import xml.etree.ElementTree as ET
 from xlsx_extractor import XlsxExtrator
 
@@ -47,6 +48,49 @@ class XlsxExtrator:
             self.log.errlg(f"Wasted ! : {e}")
             raise
 
+
+    def convert_sql_to_db2(self, sql: str) -> str:
+
+        converted = sql
+
+        # Backticks et crochets MS SQL / MySQL
+        converted = re.sub(r'`([^`]*)`', r'\1', converted)
+        converted = re.sub(r'\[([^\]]*)\]', r'\1', converted)
+
+        # Convertir TRUE/FALSE
+        converted = re.sub(r'\bTRUE\b', '1', converted, flags=re.IGNORECASE)
+        converted = re.sub(r'\bFALSE\b', '0', converted, flags=re.IGNORECASE)
+
+        # Retirer le ; final
+        converted = converted.rstrip(';')
+
+        return converted
+
+    def extract_sql_from_powerquery(self, m_text: str) -> str:
+        
+        pattern = r'Odbc\.Query\s*\(\s*"[^"]*"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)'
+        match = re.search(pattern, m_text, re.DOTALL)
+
+        if not match:
+            raise ValueError("Impossible de trouver une requête SQL dans Odbc.Query().")
+
+        sql_raw = match.group(1)
+
+        # Nettoyage PowerQuery
+        sql_clean = sql_raw \
+            .replace('\\"', '"') \
+            .replace('""', '"') \
+            .replace('#(lf)', ' ') \
+            .replace('#lf', ' ') \
+            .replace('#(cr)', ' ')
+
+        # Retirer les espaces multiples
+        sql_clean = re.sub(r'\s+', ' ', sql_clean).strip()
+
+        return sql_clean
+
+
+
         
     def extract_powerquery_queries(self, excel, excel_file):
         try: 
@@ -64,7 +108,12 @@ class XlsxExtrator:
                     if "select " in query.Formula.lower():
                         with open(fname, "a", encoding="utf-8") as f:
                             f.write(f"Nom de la requête : {query.Name}\n")                        
-                            f.write(query.Formula)  # Code M complet
+                            # f.write(self.convert_powerquery_to_db2_sql(query.Formula))  # Code M complet
+                            # f.write(query.Formula)  # Code M complet
+                            db2_query = self.extract_sql_from_powerquery(query.Formula) 
+                            db2_query = self.convert_sql_to_db2(db2_query)
+                            f.write(db2_query)
+                            
                             f.write("\n" + "-"*80 + "\n")                       
                         print(f"Extraction terminée. Les requêtes ont été sauvegardées dans {fname}.")
                     else:
@@ -83,28 +132,42 @@ class XlsxExtrator:
         if wb:
             wb.Close(SaveChanges=False)
       
+    def read_str_file_first_line(self, file_path):        
+        with open(file_path , "r", encoding="cp1252") as file:
+            return file.readline()
+
+
 
     def browse_xlsx_for_sql(self):
         # Walk through all subdirectories and files
         # input(self.destination_folder)
-        file_utils.clean_dir(self.jsprms.prms['path']['result'])
+        # file_utils.clean_dir(self.jsprms.prms['path']['result'])
         excel = win32com.client.Dispatch("Excel.Application")            
         excel.Visible = True
         excel.DisplayAlerts = False  # Pas de pop-up
-
         excel.Visible = True  # Ne pas afficher Excel
-        for root, dirs, files in os.walk(self.destination_folder):       
+        flag_file_path = f"{self.jsprms.prms['path']['flag_sql_win']}"
+        if not os.path.exists(flag_file_path):
+            file_utils.str_to_textfile(flag_file_path, "nope")
+        found_file = False
+        for root, dirs, files in os.walk(self.destination_folder):            
             for file in files:
                 print(f"Processing: {file}")
-                xl_file = os.path.join(root, file)   
-                xlsx_extractor.extract_powerquery_queries(excel, xl_file)
+                if self.read_str_file_first_line(flag_file_path) == file :
+                    found_file = True
+                if found_file :  
+                    print(f"Found file : {file}")                  
+                    xl_file = os.path.join(root, file)   
+                    xlsx_extractor.extract_powerquery_queries(excel, xl_file)
+                    file_utils.str_to_textfile(flag_file_path, file)
+                else:
+                    print(f"NOT Found file : {file}")                  
           # Quitter Excel si lancé
         if excel:
             excel.Quit()
 
     def main(self):
         # Exemple d'utilisation
-        # powerquery_code = xlsx_extractor.extract_powerquery_from_xlsx(file_path) 
         self.init_main()
         self.browse_xlsx_for_sql()
         
