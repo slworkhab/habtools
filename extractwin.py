@@ -66,13 +66,14 @@ class XlsxExtrator:
 
         return converted
 
-    def extract_sql_from_powerquery(self, m_text: str, pattern) -> str:
+    def extract_sql_from_powerquery(self, query: str, pattern) -> str:
         
 
-        match = re.search(pattern, m_text, re.DOTALL)
+        match = re.search(pattern, query.formula, re.DOTALL)
 
         if not match:
-            raise ValueError("Impossible de trouver une requête SQL dans Odbc.Query().")
+            print("Impossible de trouver une requête SQL dans Odbc.Query().")
+            return ""            
 
         sql_raw = match.group(1)
 
@@ -80,9 +81,9 @@ class XlsxExtrator:
         sql_clean = sql_raw \
             .replace('\\"', '"') \
             .replace('""', '"') \
-            .replace('#(lf)', '\r\n') \
-            .replace('#lf', '\r\n') \
-            .replace('#(cr)', '\r\n') \
+            .replace('#(lf)', os.linesep) \
+            .replace('#lf', os.linesep) \
+            .replace('#(cr)', os.linesep) \
             .replace('#(tab)', ' ')
 
         # Retirer les espaces multiples
@@ -120,26 +121,29 @@ class XlsxExtrator:
                         # query.RefreshOnOpen = False       
                         if "select " in query.Formula.lower():
                             with open(fname, "a", encoding="cp1252", errors="ignore") as f:
-                                f.write(f"Nom de la requête : {query.Name}\n")                        
+                                                        
                                 # f.write(self.convert_powerquery_to_db2_sql(query.Formula))  # Code M complet
                                 # f.write(query.Formula)  # Code M complet
-                                # pattern = r'Odbc\.Query\s*\(\s*"[^"]*"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)'
-                                # pattern = r'Odbc\.Query\s*\(\s*"[^"]*"\s*,\s*"([\s\S]*?)"\s*\)'
-                                db2_query = self.extract_sql_from_powerquery(query.Formula, r'Odbc\.Query\s*\(\s*"[^"]*"\s*,\s*"([\s\S]*?)"\s*\)')                                 
-                                fck+=f"{db2_query}\r\n"
+                                pattern1 = r'Odbc\.Query\s*\(\s*"[^"]*"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)'
+                                pattern2 = r'Odbc\.Query\s*\(\s*"[^"]*"\s*,\s*"([\s\S]*?)"\s*\)'
+                                db2_query = self.extract_sql_from_powerquery(query, pattern1)                                 
+                                fck+=f"{db2_query}{os.linesep}"
+                                if (db2_query is None):
+                                    input("NONE")
                                 if (db2_query.strip()!=""):
                                    db2_query = self.convert_sql_to_db2(db2_query)        
                                    print(f"db2_query--{db2_query}--")
                                 else:
+                                    print("############################")
                                     print("SEARCHING WITH OTHER PATTERN")
-                                    input("#############################################################")
-                                    db2_query = self.extract_sql_from_powerquery(query.Formula, r'Odbc\.Query\s*\(\s*"[^"]*"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)') 
+                                    print("############################")
+                                    db2_query = self.extract_sql_from_powerquery(query, pattern2) 
                                     db2_query = self.convert_sql_to_db2(db2_query)
-                                    fck+=f"OTHER PATTERN USED {db2_query}\r\n"
-                                   
-                                f.write(db2_query)                                
-                                f.write("\n" + "-"*80 + "\n")                 
-                                if db2_query.strip()!="":
+                                    fck+=f"{db2_query}{os.linesep}"
+                                if (db2_query.strip()!=""):
+                                    f.write(f"{query.Name}{os.linesep}")   
+                                    f.write(db2_query)                                
+                                    f.write(f'{os.linesep} {"-"*80} {os.linesep}')                                                         
                                     query_found=True      
                             print(f"Extraction terminée. Requête sauvegardee dans {fname}.")
                         else:
@@ -174,6 +178,7 @@ class XlsxExtrator:
         # Walk through all subdirectories and files
         # input(self.destination_folder)
         # file_utils.clean_dir(self.jsprms.prms['path']['result'])
+        excel_extensions = (".xls", ".xlsx")
         excel = win32com.client.Dispatch("Excel.Application")            
         excel.Visible = True
         excel.DisplayAlerts = False  # Pas de pop-up
@@ -186,11 +191,11 @@ class XlsxExtrator:
             os.path.join(root, file)
             for root, dirs, files in os.walk(self.destination_folder)
             for file in files
-            if file.lower().endswith(".xlsx")
+            if file.lower().endswith(excel_extensions)
         ]
         total_files = len(all_xlsx_files)        
         found_file = False
-        processed_files = 0
+        processed_files = 1
         for root, dirs, files in os.walk(self.destination_folder):
             for file in files:
 
