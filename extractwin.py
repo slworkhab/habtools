@@ -89,6 +89,16 @@ class XlsxExtrator:
 
         return sql_clean
 
+    
+    def str_to_textfile(self, filename: str, str_to_write: str, encoding: str = "utf-8") -> None:
+        try:
+            with open(filename, "w", encoding=encoding) as text_file:
+                text_file.write(str_to_write)
+            print(f"Fichier '{filename}' écrit avec encodage {encoding}.")
+        except UnicodeEncodeError:
+            print(f"Erreur d'encodage : impossible d'écrire avec {encoding}.")
+        except Exception as e:
+            print(f"Erreur lors de l'écriture du fichier : {e}")
 
 
         
@@ -107,7 +117,7 @@ class XlsxExtrator:
                                 
                         # query.RefreshOnOpen = False       
                         if "select " in query.Formula.lower():
-                            with open(fname, "a", encoding="utf-8") as f:
+                            with open(fname, "a", encoding="cp1252", errors="ignore") as f:
                                 f.write(f"Nom de la requête : {query.Name}\n")                        
                                 # f.write(self.convert_powerquery_to_db2_sql(query.Formula))  # Code M complet
                                 # f.write(query.Formula)  # Code M complet
@@ -138,7 +148,7 @@ class XlsxExtrator:
             wb.Close(SaveChanges=False)
       
     def read_str_file_first_line(self, file_path):        
-        with open(file_path , "r", encoding="cp1252") as file:
+        with open(file_path , "r", encoding="utf-8") as file:
             return file.readline()
 
 
@@ -151,20 +161,21 @@ class XlsxExtrator:
         excel.Visible = True
         excel.DisplayAlerts = False  # Pas de pop-up
         excel.Visible = True  # Ne pas afficher Excel
-        flag_file_path = f"{self.jsprms.prms['path']['flag_sql']}"
+        flag_file_path = f"{self.jsprms.prms['path']['flag_sql']}"        
         if not os.path.exists(flag_file_path):
-            file_utils.str_to_textfile(flag_file_path, "nope")
+            self.str_to_textfile(flag_file_path, "nope")            
         found_file = False
         for root, dirs, files in os.walk(self.destination_folder):            
             for file in files:
                 print(f"Processing: {file}")
                 if self.read_str_file_first_line(flag_file_path) == file :
                     found_file = True
+                self.str_to_textfile(flag_file_path, file)                
                 if not found_file :  
                     print(f"Found file : {file}")                  
-                    xl_file = os.path.join(root, file)   
+                    xl_file = os.path.join(root, file)                       
                     xlsx_extractor.extract_powerquery_queries(excel, xl_file)
-                    file_utils.str_to_textfile(flag_file_path, file)
+                    #file_utils.str_to_textfile(flag_file_path, file)
                 else:
                     print(f"Found file : {file}")                  
           # Quitter Excel si lancé
