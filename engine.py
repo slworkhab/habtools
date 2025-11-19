@@ -46,6 +46,12 @@ class Engine:
             flag_file_path = f"{self.jsprms.prms['path']['flag_copy']}"
             if not os.path.exists(flag_file_path):
                 self.str_to_textfile(flag_file_path, "nope")
+            all_xlsx_files = [
+            os.path.join(root, file)
+            for root, dirs, files in os.walk(self.destination_folder)
+            for file in files if file.lower().endswith(excel_extensions)]
+            total_files = len(all_xlsx_files)  
+            processed_files = 1
             found_file = False
             for root, dirs, files in os.walk(self.source_folder):
                 for file in files:                    
@@ -67,6 +73,7 @@ class Engine:
                                 if not os.path.exists(destination_path):
                                     shutil.copy2(source_path, destination_path)
                                     self.str_to_textfile(flag_file_path, file)
+                                    processed_files += 1
                                     print(f"✅ Copied: {file}")
                             else:
                                 print(f"Found file : {file}")
