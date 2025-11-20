@@ -8,7 +8,6 @@ import shutil
 import pandas as pd
 import zipfile
 import xml.etree.ElementTree as ET
-from xlsx_extractor import XlsxExtrator
 #mes libs
 import utils.str_utils as str_utils
 import utils.file_utils as file_utils

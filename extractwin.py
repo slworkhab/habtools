@@ -6,8 +6,6 @@ import inspect
 from datetime import datetime
 import re
 import xml.etree.ElementTree as ET
-from xlsx_extractor import XlsxExtrator
-
 #mes libs
 import utils.str_utils as str_utils
 import utils.file_utils as file_utils
